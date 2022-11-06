@@ -1,6 +1,9 @@
 {
     "C_Cpp.errorSquiggles": "Disabled",
     "files.associations": {
-        "iostream": "cpp"
-    }
+        "iostream": "cpp",
+        "bitset": "cpp"
+    },
+    "todo-tree.tree.showBadges": false,
+    "todo-tree.tree.disableCompactFolders": true
 }
