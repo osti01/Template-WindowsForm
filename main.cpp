@@ -17,15 +17,19 @@
 // Child Window/Control IDs
 #define IDC_BUTTON01 101
 #define IDC_TEXTBOX01 102
+#define IDC_TEXTBOX02 103
 
 // Global
 HINSTANCE hInstance;
 HWND hTextBox01;
+HWND hTextBox02;
 HWND hButton01;
-
+long windowMinWidth = 300;
+long windowMinHeight = 300;
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void ChangeWindowSize(HWND hWnd, int x, int y, int width, int height);
+void OrganiseComponents(HWND hWnd);
 // OrganiseButtons(HWND parent);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
@@ -99,19 +103,30 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         GetClientRect(hWnd, &rectMainWndClientArea);
         int WndWidth = rectMainWndClientArea.right - rectMainWndClientArea.left;
         int WndHeight = rectMainWndClientArea.bottom - rectMainWndClientArea.top;
-        std::cout << "width:" << WndWidth << "    Height: " << WndHeight << std::endl;
+        // std::cout << "width:" << WndWidth << "    Height: " << WndHeight << std::endl;
 
-        ::hTextBox01 = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, L"Nothing happened yet",
+        ::hTextBox01 = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, L"This is the content of the text box no 1, which is going to be coppied to text box no 2 after pressing the button",
                                       ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL | ES_NOHIDESEL | WS_VSCROLL | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
                                       10, 10, WndWidth - 20, WndHeight - 200, hWnd, (HMENU)IDC_TEXTBOX01, ::hInstance, NULL);
-        ::hButton01 = CreateWindowEx(0L, WC_BUTTON, L"Button 1",
+        ::hTextBox02 = CreateWindowEx(WS_EX_CLIENTEDGE, WC_EDIT, L"Nothing was coppied yet",
+                                      ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL | ES_NOHIDESEL | WS_VSCROLL | WS_CHILD | WS_TABSTOP | WS_VISIBLE,
+                                      20, 20, WndWidth - 30, WndHeight - 210, hWnd, (HMENU)IDC_TEXTBOX01, ::hInstance, NULL);
+        ::hButton01 = CreateWindowEx(0L, WC_BUTTON, L"Copy text",
                                      WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
                                      10, WndHeight - 50, 150, 50, hWnd, (HMENU)IDC_BUTTON01, ::hInstance, NULL);
     }
         return 0;
     case WM_DESTROY:
+    {
         PostQuitMessage(0);
         return 0;
+    }
+
+    case WM_SIZE:
+    {
+        OrganiseComponents(hWnd);
+        return 0;
+    }
 
     case WM_PAINT:
     {
@@ -120,69 +135,72 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         // All painting occurs here, between BeginPaint and EndPaint.
 
-        // FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW));
         HBRUSH brush = CreateSolidBrush(0xa0a0a0);
-        HBRUSH brush2 = CreateSolidBrush(0x0000ff);
 
         FillRect(hdc, &ps.rcPaint, brush);
 
         Gdiplus::Graphics gf(hdc);
-        // Gdiplus::Pen pen1(Gdiplus::Color(50, 0, 50), 1.0F);
-        Gdiplus::Pen pen1(Gdiplus::Color(255, 0, 0, 255), 3);
-        Gdiplus::Pen pen2(Gdiplus::Color(50, 0, 50), 1.0F);
+        Gdiplus::Pen pen1(Gdiplus::Color(255, 0, 0, 255), 1.0F);
 
-        // std::cout << "hdc : " << std::hex << (UINT64)hdc << std::endl;
-        // std::cout << "gf : " << std::hex << (UINT64)&gf << std::endl;
+        RECT tempRect;
+        GetClientRect(hWnd, &tempRect);
+        int w = tempRect.right - tempRect.left;
+        int h = tempRect.bottom - tempRect.top;
+        int sqW = 25;
+        int sqH = 25;
+        int spc = 4;
 
-        // std::cout << "pen1 : " << std::hex << (UINT64)&pen1 << std::endl;
-        // std::cout << "draw line" << std::endl;
-
-        gf.DrawLine(&pen1, 0, 0, 100, 100);
-        gf.DrawLine(&pen1, 30, 30, 500, 300);
-        gf.DrawLine(&pen1, 500, 500, 1200, 500);
-        gf.DrawPie(&pen2, 100, 100, 50, 50, 90, 170);
-
-        // PAINTSTRUCT ps1;
-        // HDC hdc1 = GetDC(hTextBox1);
-        // Gdiplus::Graphics gt(hdc1);
-        // gt.DrawLine(&pen1, 0, 0, 300, 300);
-        // gf.DrawLine(&pen1, 10, 10, 20, 20);
-
-        // Gdiplus::Graphics gf(hdc);
-        // Gdiplus::Pen pen1(Gdiplus::Color(255, 0, 0));
-        // gf.draw
+        for (int j = 0; j < h / sqH / spc + 1; j++)
+        {
+            for (int i = 0; i < w / sqW / spc + 1; i++)
+            {
+                gf.DrawRectangle(&pen1, spc * sqW * i, spc * sqH * j, sqW, sqH);
+            }
+        }
 
         EndPaint(hWnd, &ps);
 
         return 0;
     }
+
     case WM_COMMAND:
+    {
         switch (wParam)
         {
         case MAKELONG(IDC_BUTTON01, BN_CLICKED):
         {
-            wchar_t text[500];
             HWND hTextBox1 = GetDlgItem(hWnd, IDC_TEXTBOX01);
-            std::cout << "Button was Clicked" << std::endl;
+            HWND hTextBox2 = GetDlgItem(hWnd, IDC_TEXTBOX02);
+            int textLen = GetWindowTextLength(hTextBox01);
+            wchar_t text[textLen];
+            GetWindowText(hTextBox01, text, textLen);
+            SetWindowText(hTextBox02, text);
+
+            // std::cout << "Button was Clicked" << std::endl;
             // SendMessage(GetDlgItem(hWnd, IDC_TEXTBOX01), EM_UNDO, 0, 0);
             // GetWindowText(hTextBox1, text, GetWindowTextLength(hTextBox1));
             // SetWindowText(hTextBox1, L"This is the toolbox text");
-            std::wcout << L"text is: " << text << std::endl;
-            ChangeWindowSize(::hTextBox01, 20, 20, 100, 100);
-            return 0;
-        }
-        case MAKELONG(IDC_TEXTBOX01, EN_CHANGE):
-        {
-            std::cout << "Text Box was clicked" << std::endl;
+            // std::wcout << L"text is: " << text << std::endl;
+            // ChangeWindowSize(::hTextBox01, 20, 20, 100, 100);
             return 0;
         }
         }
 
         return 0;
+    }
+
+    case WM_GETMINMAXINFO:
+    {
+        // Set Minimum window size
+        ((LPMINMAXINFO)lParam)->ptMinTrackSize.x = (long)::windowMinWidth;
+        ((LPMINMAXINFO)lParam)->ptMinTrackSize.y = (long)::windowMinHeight;
+        return 0;
+    }
 
     case WM_ACTIVATE:
-
+    {
         return 0;
+    }
     }
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
@@ -216,7 +234,19 @@ void ChangeWindowSize(HWND hWnd, int x, int y, int width, int height)
     {
         height = tempRect.bottom - tempRect.top;
     };
-    std::cout << "window x: " << x << ", window y: " << y << ", window width: " << width << ", window height: " << height << std::endl;
+    // std::cout << "window x: " << x << ", window y: " << y << ", window width: " << width << ", window height: " << height << std::endl;
     SetWindowPos(hWnd, NULL, x, y, width, height, 0);
     return;
+}
+
+void OrganiseComponents(HWND hWnd)
+{
+    // function organizes components in the window after initialisation or resize
+    RECT tempRect;
+    GetClientRect(hWnd, &tempRect);
+    int w = tempRect.right - tempRect.left;
+    int h = tempRect.bottom - tempRect.top;
+    ChangeWindowSize(::hTextBox01, 10, 10, w / 2 - 15, h - 60);
+    ChangeWindowSize(::hTextBox02, w / 2 + 5, 10, w / 2 - 15, h - 60);
+    ChangeWindowSize(::hButton01, 10, h - 40, 150, 30);
 }
