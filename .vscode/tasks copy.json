@@ -17,7 +17,7 @@
                 "${fileDirname}/${fileBasenameNoExtension}.exe"
             ],
             "options": {
-                "cwd": "C:/Msys64/mingw64/bin"
+                "cwd": "C:/Program Files/Msys64/mingw64/bin"
             },
             "problemMatcher": [
                 "$gcc"
@@ -31,3 +31,4 @@
     ],
     "version": "2.0.0"
 }
+// "-Lgdi32sdf.wf",
