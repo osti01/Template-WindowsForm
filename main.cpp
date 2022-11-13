@@ -9,7 +9,6 @@
 #include <gdiplus.h>
 #include <CommCtrl.h>
 // #include <winuser.h>
-// #include <components.h>
 // #include <wingdi.h>
 // #include <windef.h>
 // #include <gdi32lib.h>
